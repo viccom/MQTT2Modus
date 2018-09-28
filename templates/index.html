@@ -1,0 +1,232 @@
+<!--[if lt IE 9]>
+	<p class="browsehappy">You are using an <strong>outdated</strong> browser. Please <a href="http://browsehappy.com/">upgrade your browser</a> to improve your experience.</p>
+<![endif]--> 
+
+<!DOCTYPE html>
+<html>
+<head>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+    <meta charset="utf-8" />
+      <style type="text/css">
+          .bs-example{
+            margin: 16px;
+          }
+          html { overflow-y: scroll; }
+      </style>
+<!-- <link rel="stylesheet" href="static/css/bootstrap.min.css">
+    <script src="static/js/jquery-2.2.4.min.js"></script>
+    <script src="static/js/bootstrap.min.js" ></script> -->
+    <link rel="shortcut icon" href="{{ url_for('static', filename='favicon.ico') }}" type="image/x-icon">
+    <link rel="icon" href="{{ url_for('static', filename='favicon.ico') }}" type="image/x-icon">
+	 <link rel="stylesheet" href="https://cdn.bootcss.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+    <script src="https://cdn.bootcss.com/jquery/2.2.4/jquery.min.js"></script>
+    <script src="https://cdn.bootcss.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
+</head>
+
+<body>
+<div class="row">
+  <div class="col-md-2 bs-example">
+      <div class="panel panel-default">
+          <div class="panel-heading">MQTT2Modbus服务器</div>
+
+              <div class="list-group">
+                  <button type="button" class="list-group-item active nav_service_status">服务状态</button>
+                  <button type="button" class="list-group-item nav_log_view">日志查看</button>
+                  <button type="button" class="list-group-item nav_tag_map hide">映射点表</button>
+                </div>
+
+        </div>
+
+
+  </div>
+
+
+  <div class="col-md-9 bs-example">
+
+        <!--服务状态-->
+      <div class="col-md-12">
+
+        <nav class="navbar navbar-default">
+          <div class="container-fluid">
+            <!-- Brand and toggle get grouped for better mobile display -->
+            <div class="navbar-header">
+              <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1" aria-expanded="false">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+              </button>
+              <span class="navbar-brand">服务状态：</span><span class="navbar-brand service_status">……</span>
+            </div>
+
+            <!-- Collect the nav links, forms, and other content for toggling -->
+            <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+              <form class="navbar-form navbar-left">
+
+
+                  <button type="button" class="btn btn-default start_service hide">
+                      <span class="glyphicon glyphicon-stop" aria-hidden="true">启动</span>
+                    </button>
+
+                  <button type="button" class="btn btn-default stop_service">
+                      <span class="glyphicon glyphicon-stop" aria-hidden="true">停止</span>
+                    </button>
+
+
+                  <button type="button" class="btn btn-default restart_service">
+                      <span class="glyphicon glyphicon-repeat" aria-hidden="true">重启</span>
+                    </button>
+
+              </form>
+                <span class="navbar-brand operation_tip"></span>
+               <form class="nav navbar-form navbar-right">
+                    <button type="button" class="btn btn-default refresh_status">
+                      <span class="glyphicon glyphicon-refresh" aria-hidden="true"></span>
+                    </button>
+                </form>
+            </div><!-- /.navbar-collapse -->
+
+
+
+          </div><!-- /.container-fluid -->
+        </nav>
+
+      </div>
+        <!--服务状态-->
+
+      <!--服务配置-->
+      <div class="service_config service_pannel">
+          <div class="col-md-12">
+              <div class="form-group ng-scope">
+                    <label class="control-label col-sm-2">mbServ</label>
+                    <div class="col-sm-10 form-control-static">
+                        <div>
+                            <button type="button" class="btn btn-primary btn-sm pull-right mbserv_modify">修改</button>
+                            <button type="button" class="btn btn-default btn-sm pull-right hide mbserv_cancel">取消</button>
+                            <button type="button" class="btn btn-default btn-sm pull-right hide mbserv_save">保存</button>
+
+                            <span>绑定IP：</span>
+                            <span class="mbserv_host mbserv_text"></span>
+                            <input type="text" class="mbserv_input hide" value="0.0.0.0">
+                        </div>
+                        <div>
+                            <span>绑定端口：</span>
+                            <span class="mbserv_port mbserv_text"></span>
+                            <input type="text" class="mbserv_input hide" value="5020">
+                        </div>
+                    </div>
+              </div>
+          </div>
+
+          <div class="col-md-12">
+
+                <div class="form-group ng-scope">
+                    <label class="control-label col-sm-2">mqtt</label>
+                    <div class="col-sm-10 form-control-static">
+                        <div>
+                            <button type="button" class="btn btn-primary btn-sm pull-right mqtt_modify">修改</button>
+                            <button type="button" class="btn btn-default btn-sm pull-right hide mqtt_cancel">取消</button>
+                            <button type="button" class="btn btn-default btn-sm pull-right hide mqtt_save">保存</button>
+
+                            <span>主机地址：</span>
+                            <span class="mqtt_host mqtt_text"></span>
+                            <input type="text" class="mqtt_input hide" value="m.symgrid.com">
+                        </div>
+                        <div>
+                            <span>端口：</span>
+                            <span class="mqtt_port mqtt_text"></span>
+                            <input type="text" class="mqtt_input hide" value="1883">
+                        </div>
+                        <div>
+                            <span>心跳时间：</span>
+                            <span class="mqtt_keepalive mqtt_text"></span>
+                            <input type="text" class="mqtt_input hide" value="60">
+                        </div>
+                        <div>
+                            <span>用户：</span>
+                            <span class="mqtt_user mqtt_text"></span>
+                            <input type="text" class="mqtt_input hide">
+                        </div>
+                        <div class="mqtt_pwd hide">
+                            <span>密码：</span>
+                            <input type="text" class="mqtt_input hide">
+                        </div>
+                    </div>
+              </div>
+
+          </div>
+
+          <div class="col-md-12">
+              <div class="form-group ng-scope">
+                    <label class="control-label col-sm-2">redis</label>
+                    <div class="col-sm-10 form-control-static">
+                        <div>
+                            <button type="button" class="btn btn-primary btn-sm pull-right redis_modify">修改</button>
+                            <button type="button" class="btn btn-default btn-sm pull-right hide redis_cancel">取消</button>
+                            <button type="button" class="btn btn-default btn-sm pull-right hide redis_save">保存</button>
+
+                            <span>主机地址：</span>
+                            <span class="redis_host redis_text"></span>
+                            <input type="text" class="redis_input hide" value="m.symgrid.com">
+                        </div>
+                        <div>
+                            <span>端口：</span>
+                            <span class="redis_port redis_text"></span>
+                            <input type="text" class="redis_input hide" value="6379">
+                        </div>
+                        <div class="redis_pwd hide">
+                            <span>连接密码：</span>
+                            <input type="text" class="redis_input hide">
+                        </div>
+                    </div>
+              </div>
+          </div>
+
+          <div class="col-md-12">
+              <div class="form-group ng-scope">
+                    <label class="control-label col-sm-2">Log</label>
+                    <div class="col-sm-10 form-control-static">
+                        <div>
+                            <button type="button" class="btn btn-primary btn-sm pull-right log_modify">修改</button>
+                            <button type="button" class="btn btn-default btn-sm pull-right hide log_cancel">取消</button>
+                            <button type="button" class="btn btn-default btn-sm pull-right hide log_save">保存</button>
+
+                            <span>日志等级：</span>
+                            <span class="log_level log_text"></span>
+                            <input type="text" class="log_input hide" value="INFO">
+                        </div>
+                    </div>
+              </div>
+          </div>
+
+      </div>
+      <!--服务配置-->
+
+      <!--日志浏览-->
+      <div class="log_view hide">
+          <div class="col-md-12">
+              <ul class="nav nav-pills log_view_nav">
+              </ul>
+          </div>
+          <div class="col-md-12">
+            <div class="panel panel-success">
+              <!-- Default panel contents -->
+              <div class="panel-heading log_title"></div>
+              <div class="panel-body log_content">
+
+              </div>
+
+            </div>
+          </div>
+      </div>
+
+
+      <!--日志浏览-->
+
+</div>
+
+</div>
+<script type="text/javascript" src="static/mqtt2mbs_1.js"></script>
+<script type="text/javascript" src="static/mqtt2mbs_2.js"></script>
+</body>
+</html>
