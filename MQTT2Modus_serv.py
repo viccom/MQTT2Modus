@@ -175,7 +175,7 @@ class CallbackDataBlock(ModbusSparseDataBlock):
         """
         # print("@@@@@@@@@@@@@", address, value)
         # print("self.tag_rw", self.tag_rw)
-        super(CallbackDataBlock, self).setValues(address, value)
+        # super(CallbackDataBlock, self).setValues(address, value)
         self.queue.append_data(self.devices.get(address, None), value)
         # self.queue.put((self.devices.get(address, None), value))
 
@@ -300,7 +300,7 @@ def run_callback_server():
     # print("tag_addr", tag_addr)
     # print("tag_datatype", tag_datatype)
 
-    writer = Worker(log)
+    writer = Worker(log, "http://ioe.thingsroot.com", "1234567890")
     writer.start()
     block = CallbackDataBlock(devices, (tag_addr, tag_datatype, tag_rw), redis_rtdb, gates_list, writer)
 
