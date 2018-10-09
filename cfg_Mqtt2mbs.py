@@ -17,6 +17,7 @@ import requests
 from requests.auth import HTTPBasicAuth
 import logging
 import inspect
+import hashlib
 
 if sys.argv[0] != os.path.split(os.path.realpath(__file__))[1]:
     os.chdir(os.path.split(sys.argv[0])[0])
@@ -29,6 +30,26 @@ app.static_folder
 CORS(app, supports_credentials=True)
 auth = HTTPTokenAuth(scheme='Bearer')
 # app.add_url_rule('/favicon.ico', redirect_to=url_for('static', filename='favicon.ico'))
+ctx = app.app_context()
+ctx.push()
+
+def md5sum(filename):
+        """
+        用于获取文件的md5值
+        :param filename: 文件名
+        :return: MD5码
+        """
+        if not os.path.isfile(filename):  # 如果校验md5的文件不是文件，返回空
+            return
+        myhash = hashlib.md5()
+        f = open(filename, 'rb')
+        while True:
+            b = f.read(8096)
+            if not b:
+                break
+            myhash.update(b)
+        f.close()
+        return myhash.hexdigest()
 
 def _getLogger():
     logger = logging.getLogger('[cfg_Mqtt_modbus]')
@@ -51,11 +72,13 @@ def read_cfg(file):
     mqtt_srv = (cfg.get('mqtt', 'host'), cfg.getint('mqtt', 'port'), cfg.getint('mqtt', 'keepalive'), cfg.get('mqtt', 'user'))
     mbs_cfg = (cfg.get('mbServ', 'host'), cfg.getint('mbServ', 'port'))
     log_level = cfg.get('log', 'level')
-    return {"redis": redis_srv, "mqtt": mqtt_srv,"mbServ": mbs_cfg,"log": log_level}
+    cloud_cfg = cfg.get('cloud', 'Authcode')
+    return {"redis": redis_srv, "mqtt": mqtt_srv, "mbServ": mbs_cfg, "cloud": cloud_cfg, "log": log_level}
 
 def mod_cfg(file, _cfg):
     cfg = configparser.ConfigParser()
     cfg.read(file)
+    print(_cfg)
     for k, v in _cfg.items():
         for p, q in v.items():
             cfg.set(k, p, q)
@@ -94,6 +117,9 @@ def enum_file(dirname):
         pass
     return file_name_list
 
+current_app.ini_hash = md5sum("config.ini")
+current_app.csv_hash = md5sum("device_mapping.csv")
+current_app.has_restart = True
 
 @auth.verify_token
 def verify_token(token):
@@ -136,6 +162,7 @@ def mb_service_status():
 def mb_service_start():
     service_start()
     sleep(0.5)
+    current_app.has_restart = True
     return json.dumps(service_status())
 
 
@@ -151,6 +178,7 @@ def mb_service_restart():
     sleep(0.5)
     service_start()
     sleep(0.5)
+    current_app.has_restart = True
     return json.dumps(service_status())
 
 @app.route('/log/<path>')
@@ -160,6 +188,17 @@ def load_log(path):
     resp.headers["Content-type"]="application/json;charset=UTF-8"
     return resp
 
+@app.route('/cfg_change', methods=('GET', 'POST'))
+def cfg_change():
+    if not current_app.has_restart:
+        return json.dumps({"message": True})
+    if current_app.ini_hash != md5sum("config.ini") or current_app.csv_hash != md5sum("device_mapping.csv"):
+        current_app.ini_hash = md5sum("config.ini")
+        current_app.csv_hash = md5sum("device_mapping.csv")
+        current_app.has_restart = False
+        return json.dumps({"message": True})
+    else:
+        return json.dumps({"message": False})
 
 @app.route('/api', methods=('GET', 'POST'))
 @auth.login_required

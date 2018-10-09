@@ -284,6 +284,7 @@ def run_callback_server():
     mqtt_srv = (config.get('mqtt', 'host'), config.getint('mqtt', 'port'), config.getint('mqtt', 'keepalive'), config.get('mqtt', 'user'), config.get('mqtt', 'pwd'))
     mbs_cfg = (config.get('mbServ', 'host'), config.getint('mbServ', 'port'))
     log_level = config.get('log', 'level')
+    Authcode = config.get('cloud', 'Authcode')
 
     level = logging.getLevelName(log_level)
     log.setLevel(level)
@@ -300,7 +301,7 @@ def run_callback_server():
     # print("tag_addr", tag_addr)
     # print("tag_datatype", tag_datatype)
 
-    writer = Worker(log, "http://ioe.thingsroot.com", "1234567890")
+    writer = Worker(log, "http://ioe.thingsroot.com", Authcode)
     writer.start()
     block = CallbackDataBlock(devices, (tag_addr, tag_datatype, tag_rw), redis_rtdb, gates_list, writer)
 

@@ -21,9 +21,9 @@ $(document).ready(function() {
     //
     // setInterval(function(){	  check_gate_alive(gate_sn, cloud_url, auth_code);	  },5000);
     //
-    // check_cloud_status_ret = setInterval(function(){
-    // 	query_cloudproxy_status(frpc_item);
-    //   },20000);
+    check_cfg_monitor_ret = setInterval(function(){
+    	cfg_monitor();
+      },2000);
 
 
 
@@ -113,11 +113,12 @@ $(document).ready(function() {
         var mbServ_cfg = {"mbServ": aa};
         $("input.mbserv_input").each(function(k, v){
 		// let this = $(this);
-		    console.log(k, $(this).val());
+		//     console.log(k, $(this).val());
 		    if(k==0){
 		        if(checkIP($(this).val())){
 		            aa.host=$(this).val()
                 }else{
+		            alert("请输入有效的IP地址");
 		            return false
                 }
             }
@@ -125,11 +126,12 @@ $(document).ready(function() {
 		        if(check_tcp_port($(this).val())){
 		            aa.port=$(this).val()
                 }else{
+		            alert("有效范围1025~65535");
 		            return false
                 }
             }
         });
-        console.log(mbServ_cfg);
+        // console.log(mbServ_cfg);
 
 
       $.ajax({
@@ -158,6 +160,9 @@ $(document).ready(function() {
                               $("span.mqtt_keepalive").text(val[2]);
                               $("span.mqtt_user").text(val[3]);
                           }
+                          if(key=="cloud"){
+                                  $("span.cloud_Authcode").text(val);
+                              }
                           if(key=="log"){
                               $("span.log_level").text(val);
                           }
@@ -203,7 +208,7 @@ $("button.mbserv_cancel").click(function () {
         $(this).prevAll().removeClass("hide");
         $(this).nextAll().removeClass("hide");
         $("input.mqtt_input").removeClass("hide");
-        $("div.mqtt_pwd").removeClass("hide");
+        $("span.mqtt_pwd").removeClass("hide");
         $('span.mqtt_text').addClass('hide')
     });
 
@@ -211,32 +216,109 @@ $("button.mbserv_cancel").click(function () {
 
 // 配置按钮--mqtt保存-----开始
     $("button.mqtt_save").click(function () {
-
+        var aa = new Object();
+        var mqtt_cfg = {"mqtt":aa};
         $("input.mqtt_input").each(function(k, v){
 		// let this = $(this);
-		    console.log(k, $(this).val());
+		//     console.log(k, $(this).val());
 		    if(k==0){
-		        if(!checkIP($(this).val())){
-		            checkDomain($(this).val());
+		        if(checkIP($(this).val())){
+		            aa.host=$(this).val();
+                }else{
+		            if(checkDomain($(this).val())){
+		                aa.host=$(this).val()
+                    }else{
+		                alert("请输入有效的地址");
+		                return false
+                    }
                 }
             }
             if(k==1){
-		        check_tcp_port($(this).val());
+		       if(check_tcp_port($(this).val())){
+		           aa.port=$(this).val()
+               };
             }
             if(k==2){
                 console.log((10<parseInt($(this).val())<600));
 		        if (!(10<parseInt($(this).val())<600)){
                     alert("有效范围10~600");
+                    return false
+                }else{
+		            aa.keepalive=$(this).val()
                 };
             }
             if(k==3){
-
+                if($(this).val()!=""){
+                    aa.user=$(this).val()
+                }else{
+                    alert("用户名不能为空");
+                    return false
+                }
             }
             if(k==4){
-
+                if($(this).val()!=""){
+                    aa.pwd=$(this).val()
+                }else{
+                    alert("密码不能为空");
+                    return false
+                }
             }
         });
-        return
+
+          $.ajax({
+            url: '/w_config',
+            headers: {
+                    Authorization: "Bearer 123123123"
+                    },
+            type: 'post',
+            contentType: "application/json; charset=utf-8",
+            dataType:'json',
+            //async:false,
+            data: JSON.stringify(mqtt_cfg),
+            success:function(data){
+                              $.each(data,function(key,val){
+                              if(key=="mbServ"){
+                                  $("span.mbserv_host").text(val[0]);
+                                  $("span.mbserv_port").text(val[1]);
+                              }
+                              if(key=="redis"){
+                                  $("span.redis_host").text(val[0]);
+                                  $("span.redis_port").text(val[1]);
+                              }
+                              if(key=="mqtt"){
+                                  $("span.mqtt_host").text(val[0]);
+                                  $("span.mqtt_port").text(val[1]);
+                                  $("span.mqtt_keepalive").text(val[2]);
+                                  $("span.mqtt_user").text(val[3]);
+                              }
+                              if(key=="cloud"){
+                                  $("span.cloud_Authcode").text(val);
+                              }
+                              if(key=="log"){
+                                  $("span.log_level").text(val);
+                              }
+                          });
+                                $("button.mqtt_save").addClass("hide");
+                                $("button.mqtt_cancel").addClass("hide");
+                                $("button.mqtt_modify").removeClass("hide");
+                                $("span.mqtt_text").removeClass("hide");
+                                $("input.mqtt_input").addClass("hide");
+                                $("span.mqtt_pwd").addClass("hide");
+
+                },
+
+            error:function(data){
+                    console.log(data);
+                        $("button.mqtt_save").addClass("hide");
+                        $("button.mqtt_cancel").addClass("hide");
+                        $("button.mqtt_modify").removeClass("hide");
+                        $("span.mqtt_text").removeClass("hide");
+                        $("input.mqtt_input").addClass("hide");
+                        $("span.mqtt_pwd").addClass("hide");
+            }
+          });
+
+
 
     });
 
@@ -249,7 +331,7 @@ $("button.mqtt_cancel").click(function () {
     $("button.mqtt_modify").removeClass("hide");
     $("span.mqtt_text").removeClass("hide");
     $("input.mqtt_input").addClass("hide");
-    $("div.mqtt_pwd").addClass("hide");
+    $("span.mqtt_pwd").addClass("hide");
 });
 
 // 配置按钮--mqtt取消------结束
@@ -270,24 +352,90 @@ $("button.mqtt_cancel").click(function () {
 
 // 配置按钮--redis保存-----开始
     $("button.redis_save").click(function () {
-
+        var aa = new Object();
         $("input.redis_input").each(function(k, v){
 		    if(k==0){
-		        if(!checkIP($(this).val())){
-		            checkDomain($(this).val());
+		        if(checkIP($(this).val())){
+		            aa.host=$(this).val();
+                }else{
+		            if(checkDomain($(this).val())){
+		                aa.host=$(this).val()
+                    }else{
+		                alert("请输入有效的地址");
+		                return false
+                    }
                 }
             }
             if(k==1){
-		        check_tcp_port($(this).val());
+		       if(check_tcp_port($(this).val())){
+		           aa.port=$(this).val()
+               }else{
+		            return false
+                    };
             }
             if(k==2){
-
+                if($(this).val()!=""){
+                    aa.pwd=$(this).val()
+                }else{
+                    alert("密码不能为空");
+                    return false
+                }
             }
         });
 
-        return
+        var bb= "redis://:"+ aa.pwd + "@"+ aa.host + ":"+ aa.port;
+        var redis_cfg = {"redis":{"url":bb}};
 
+          $.ajax({
+            url: '/w_config',
+            headers: {
+                    Authorization: "Bearer 123123123"
+                    },
+            type: 'post',
+            contentType: "application/json; charset=utf-8",
+            dataType:'json',
+            //async:false,
+            data: JSON.stringify(redis_cfg),
+            success:function(data){
+                              $.each(data,function(key,val){
+                              if(key=="mbServ"){
+                                  $("span.mbserv_host").text(val[0]);
+                                  $("span.mbserv_port").text(val[1]);
+                              }
+                              if(key=="redis"){
+                                  $("span.redis_host").text(val[0]);
+                                  $("span.redis_port").text(val[1]);
+                              }
+                              if(key=="mqtt"){
+                                  $("span.mqtt_host").text(val[0]);
+                                  $("span.mqtt_port").text(val[1]);
+                                  $("span.mqtt_keepalive").text(val[2]);
+                                  $("span.mqtt_user").text(val[3]);
+                              }
+                              if(key=="cloud"){
+                                  $("span.cloud_Authcode").text(val);
+                              }
+                              if(key=="log"){
+                                  $("span.log_level").text(val);
+                              }
+                          });
+                                $("button.redis_save").addClass("hide");
+                                $("button.redis_cancel").addClass("hide");
+                                $("button.redis_modify").removeClass("hide");
+                                $("span.redis_text").removeClass("hide");
+                                $("input.redis_input").addClass("hide");
 
+                },
+
+            error:function(data){
+                    console.log(data);
+                        $("button.redis_save").addClass("hide");
+                        $("button.redis_cancel").addClass("hide");
+                        $("button.redis_modify").removeClass("hide");
+                        $("span.redis_text").removeClass("hide");
+                        $("input.redis_input").addClass("hide");
+            }
+          });
 
     });
 
@@ -304,6 +452,93 @@ $("button.redis_cancel").click(function () {
 });
 
 // 配置按钮--redis取消------结束
+
+// 配置按钮--cloud修改-----开始
+    $("button.cloud_modify").click(function () {
+
+        $(this).addClass("hide");
+        $(this).prevAll().removeClass("hide");
+        $(this).nextAll().removeClass("hide");
+        $("input.cloud_input").removeClass("hide");
+        $('span.cloud_text').addClass('hide')
+    });
+
+// 配置按钮--cloud修改------结束
+
+
+// 配置按钮--cloud保存-----开始
+    $("button.cloud_save").click(function () {
+        var cloud_authcode = $("input.cloud_input").val();
+        // console.log(log_level);
+        if(cloud_authcode){
+            var cloud_cfg = {"cloud": {"Authcode":cloud_authcode}};
+          $.ajax({
+            url: '/w_config',
+            headers: {
+                    Authorization: "Bearer 123123123"
+                    },
+            type: 'post',
+            contentType: "application/json; charset=utf-8",
+            dataType:'json',
+            //async:false,
+            data: JSON.stringify(cloud_cfg),
+            success:function(data){
+                              $.each(data,function(key,val){
+                              if(key=="mbServ"){
+                                  $("span.mbserv_host").text(val[0]);
+                                  $("span.mbserv_port").text(val[1]);
+                              }
+                              if(key=="redis"){
+                                  $("span.redis_host").text(val[0]);
+                                  $("span.redis_port").text(val[1]);
+                              }
+                              if(key=="mqtt"){
+                                  $("span.mqtt_host").text(val[0]);
+                                  $("span.mqtt_port").text(val[1]);
+                                  $("span.mqtt_keepalive").text(val[2]);
+                                  $("span.mqtt_user").text(val[3]);
+                              }
+                              if(key=="cloud"){
+                                  $("span.cloud_Authcode").text(val);
+                              }
+                              if(key=="log"){
+                                  $("span.log_level").text(val);
+                              }
+                          });
+                                $("button.cloud_save").addClass("hide");
+                                $("button.cloud_cancel").addClass("hide");
+                                $("button.cloud_modify").removeClass("hide");
+                                $("span.cloud_text").removeClass("hide");
+                                $("input.cloud_input").addClass("hide");
+
+                },
+
+            error:function(data){
+                    console.log(data);
+                        $("button.cloud_save").addClass("hide");
+                        $("button.cloud_cancel").addClass("hide");
+                        $("button.cloud_modify").removeClass("hide");
+                        $("span.cloud_text").removeClass("hide");
+                        $("input.cloud_input").addClass("hide");
+            }
+          });
+        }
+
+    });
+
+// 配置按钮--cloud保存------结束
+
+// 配置按钮--cloud取消-----开始
+$("button.cloud_cancel").click(function () {
+    $(this).addClass("hide");
+    $("button.cloud_save").addClass("hide");
+    $("button.cloud_modify").removeClass("hide");
+    $("span.cloud_text").removeClass("hide");
+    $("input.cloud_input").addClass("hide");
+});
+
+// 配置按钮--cloud取消------结束
+
 
 // 配置按钮--log修改-----开始
     $("button.log_modify").click(function () {
@@ -430,7 +665,7 @@ $("button.log_cancel").click(function () {
             $(this).addClass("active");
             $(this).prevAll().removeClass("active");
             $(this).nextAll().removeClass("active");
-            get_locontent($(this).attr('data-id'));
+            get_logcontent($(this).attr('data-id'));
     });
 
 // 日志浏览--日志切换------结束

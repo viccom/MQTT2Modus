@@ -147,8 +147,8 @@
                             <span class="mqtt_user mqtt_text"></span>
                             <input type="text" class="mqtt_input hide">
                         </div>
-                        <div class="mqtt_pwd hide">
-                            <span>密码：</span>
+                        <div>
+                            <span  class="mqtt_pwd hide">密码：</span>
                             <input type="text" class="mqtt_input hide">
                         </div>
                     </div>
@@ -184,6 +184,24 @@
 
           <div class="col-md-12">
               <div class="form-group ng-scope">
+                    <label class="control-label col-sm-2">cloud</label>
+                    <div class="col-sm-10 form-control-static">
+                        <div>
+                            <button type="button" class="btn btn-primary btn-sm pull-right cloud_modify">修改</button>
+                            <button type="button" class="btn btn-default btn-sm pull-right hide cloud_cancel">取消</button>
+                            <button type="button" class="btn btn-default btn-sm pull-right hide cloud_save">保存</button>
+
+                            <span>授权码：</span>
+                            <span class="cloud_Authcode cloud_text"></span>
+                            <input type="text" class="cloud_input hide" value="Authcode">
+                        </div>
+
+                    </div>
+              </div>
+          </div>
+
+          <div class="col-md-12">
+              <div class="form-group ng-scope">
                     <label class="control-label col-sm-2">Log</label>
                     <div class="col-sm-10 form-control-static">
                         <div>
@@ -198,6 +216,8 @@
                     </div>
               </div>
           </div>
+
+
 
       </div>
       <!--服务配置-->

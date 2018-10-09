@@ -63,9 +63,9 @@ class Worker(threading.Thread):
 							if action_ret["message"]["result"]:
 								self.log.info("1. set value:" + value[0] + "/" + str(value[1][0]) + "/" + "Successful")
 							else:
-								self.log.info("1. set value:" + value[0] + "/" + str(value[1][0]) + "/" + "Failed")
+								self.log.error("1. set value:" + value[0] + "/" + str(value[1][0]) + "/" + "Failed")
 						else:
-							self.log.info("1. set value:" + value[0] + "/" + str(value[1][0]) + "/" + "Failed")
+							self.log.error("1. set value:" + value[0] + "/" + str(value[1][0]) + "/" + "Failed")
 					except Exception as ex:
 						self.log.fatal(ex)
 						self.log.fatal('set value: Catch an exception.')
@@ -101,9 +101,9 @@ class Worker(threading.Thread):
 							if action_ret["message"]["result"]:
 								self.log.info("2. set value:" + value[0] + "/" + str(value[1]) + "/" + "Successful")
 							else:
-								self.log.info("2. set value:" + value[0] + "/" + str(value[1]) + "/" + "Failed")
+								self.log.error("2. set value:" + value[0] + "/" + str(value[1]) + "/" + "Failed")
 						else:
-							self.log.info("2. set value:" + value[0] + "/" + str(value[1]) + "/" + "Failed")
+							self.log.error("2. set value:" + value[0] + "/" + str(value[1]) + "/" + "Failed")
 					except Exception as ex:
 						self.log.fatal(ex)
 						self.log.fatal('set value: Catch an exception.')

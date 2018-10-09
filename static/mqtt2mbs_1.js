@@ -56,7 +56,7 @@ function checkDomain(enDomain) {
 	}
 	  if(!allValid) {
 		  alert("请输入有效的域名或路径！");
-		  return (false);
+		  return false;
 		 
 	}
 	    if (enDomain.length > 0)
@@ -132,27 +132,6 @@ function check_local_status() {
 
     });
 
-    if($("button#start_vpn").html()==""){
-          $("button#start_vpn").addClass("btn-primary");
-          $("button#start_vpn").removeClass("btn-danger");
-          $("button#start_vpn").html("启动VPN");
-		   vpn_running = false;
-          $("span#ping_devip_result").removeClass('text-success')
-          $("span#ping_devip_result").removeClass('text-danger')
-          $("span#ping_devip_result").html("");
-    }
-
-	    if($("button#start_vpn").html()=="启动中……"){
-			$(".tunnel_config").attr("disabled",true);
-			$("button#start_vpn").attr("disabled",true);
-    }
-	
-		if($("button#start_vpn").html()=="停止中……"){
-			$(".tunnel_config").attr("disabled",true);
-			$("button#start_vpn").attr("disabled",true);
-    }
-	
-    $("button#start_vpn").removeClass("hide");
     // 检测本地服务状态
 }
 
@@ -186,6 +165,9 @@ function check_service_config() {
                   $("span.mqtt_keepalive").text(val[2]);
                   $("span.mqtt_user").text(val[3]);
               }
+              if(key=="cloud"){
+                  $("span.cloud_Authcode").text(val);
+                }
               if(key=="log"){
                   $("span.log_level").text(val);
               }
@@ -194,92 +176,6 @@ function check_service_config() {
 
           });
 
-      },
-      error:function(data){
-          console.log(data);
-      }
-    });
-}
-
-function check_tunnel_mode() {
-     $.ajax({
-      url: 'http://127.0.0.1:5000/tunnel_mode',
-      headers: {
-              Accept: "application/json; charset=utf-8",
-              Authorization: "Bearer 123123123"
-              },
-      type: 'get',
-      contentType: "application/json; charset=utf-8",
-      dataType:'json',
-      success:function(data){
-		console.log(data);
-		data = data.message;
-         if(data){
-					console.log(data);
-					$("input#authcode").val(data.auth_code);
-					// console.log(data.is_running, data.gate_sn, gate_sn);
-					// console.log(vpn_running, data.gate_sn!=gate_sn);
-					if (data.is_running){
-						vpn_running=data.is_running;
-					}
-					
-					console.log(data.gate_sn, gate_sn);
-					var vpn_msg_html = '';
-					if(vpn_running  &&  data.gate_sn!=gate_sn){
-							console.log("本地在运行，序列号不一样");
-
-								var date = new Date();  
-								var strDate = date.toLocaleString().replace(/[年月]/g,'-').replace(/[日上下午]/g,'');  
-								vpn_msg_html = vpn_msg_html + strDate + "  当前计算机正和网关" + data.gate_sn + "进行VPN连接，你可在此关闭本机和网关"+ data.gate_sn + "的VPN连接，<button onclick='stop_vpn_in_modal()'>停止VPN</button>，也可关闭当前页面，稍候再试！";
-								$("span.error_tips").html(vpn_msg_html);
-								$('#myModal').modal('show'); 
-					  }
-
-
-					  
-
-					$("input#gatesn").val(data.gate_sn);
-					$("input#tap_ip").val(data.vpn_cfg.tap_ip);
-					  $("input#tap_netmask").val(data.vpn_cfg.tap_netmask);
-					  $("input#dev_ip").val(data.vpn_cfg.dev_ip);
-
-					  
-					gate_sn  = $("input#gatesn").val();
-					net_mode = data.vpn_cfg.net_mode;
-					frpc_item = gate_sn + "_" + net_mode;
-					if(net_mode=="router"){
-						bind_port = "666";
-						$("span#vn_ipaddr").html("现场子网地址:");
-					  $("span#vn_netmask").html("现场子网netmask:");
-					  $("button#bridge").removeClass("btn-primary active");
-					  $("button#router").addClass("btn-primary active");
-					}
-					else{
-						bind_port = "665";
-						$("span#vn_ipaddr").html("现场子网地址:");
-						$("span#vn_netmask").html("现场子网netmask:");
-						$("button#router").removeClass("btn-primary active");
-						$("button#bridge").addClass("btn-primary active");
-					}
-					if(data.common.protocol=="tcp"){
-						  net_protocol=data.common.protocol;
-						  $("button#protocol_tcp").addClass("btn-primary active");
-						  $("button#protocol_kcp").removeClass("btn-primary active");
-					}
-					else{
-							net_protocol=data.common.protocol;
-						  $("button#protocol_kcp").addClass("btn-primary active");
-						  $("button#protocol_tcp").removeClass("btn-primary active");
-					}
-					
-	
-		
-			}
-		
-		else{
-			console.log("本地未运行");
-			check_gate_isbusy(gate_sn_org, cloud_url, auth_code );
-		}
       },
       error:function(data){
           console.log(data);
@@ -690,9 +586,9 @@ function get_logfiles() {
             });
 
             $("ul.log_view_nav").html(html_text);
-            if(data.length){
+            if(data.length>0){
                 // console.log(data[0]);
-                get_locontent(data[0]);
+                get_logcontent(data[0]);
             }
 
         },
@@ -702,7 +598,7 @@ function get_logfiles() {
       });
 }
 
-function get_locontent(filename) {
+function get_logcontent(filename) {
     // 发送心跳
        $.ajax({
         url: '/log/'+filename,
@@ -725,6 +621,30 @@ function get_locontent(filename) {
         },
         error:function(data){
             // console.log(data);
+        }
+      });
+}
+
+function cfg_monitor() {
+    // 发送心跳
+    $.ajax({
+        url: '/cfg_change',
+        headers: {
+                Authorization: "Bearer 123123123"
+                },
+        type: 'get',
+        contentType: "application/json; charset=utf-8",
+        dataType:'json',
+        success:function(data){
+            if (data.message){
+                $("span.operation_tip").html("配置更改，请重启生效！");
+            }else{
+                $("span.operation_tip").html("");
+            }
+
+            },
+        error:function(data){
+
         }
       });
 }
