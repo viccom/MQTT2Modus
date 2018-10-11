@@ -18,6 +18,9 @@ match_data_path = re.compile(r'^([^/]+)/([^/]+)/(.+)$')
 match_topic = re.compile(r'^([^/]+)/(.+)$')
 
 datatype_len = {
+    "bool": 1,
+    "uint8": 1,
+    "int8": 1,
     "uint16": 1,
     "int16": 1,
     "uint32": 2,

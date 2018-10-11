@@ -93,6 +93,9 @@ match_topic = re.compile(r'^([^/]+)/(.+)$')
 match_value = re.compile(r'^([^/]+)/value')
 
 datatype_len = {
+    "bool": 1,
+    "uint8": 1,
+    "int8": 1,
     "uint16": 1,
     "int16": 1,
     "uint32": 2,
@@ -147,14 +150,14 @@ class CallbackDataBlock(ModbusSparseDataBlock):
                     if tag in self.tag_addr.keys():
                         # print(g[0], self.tag_addr[g[0]], rtval)
                         if datatype_len[self.tag_datatype[tag]] == 1:
-                            values[self.tag_addr[tag]] = rtval
+                            values[self.tag_addr[tag]] = int(rtval)
                         elif self.tag_datatype[tag] == 'uint32':
-                            databin = struct.pack('>I', rtval)
+                            databin = struct.pack('>I', int(rtval))
                             values[self.tag_addr[tag]] = struct.unpack('!H', databin[2:4])[0]
                             values[self.tag_addr[tag] + 1] = struct.unpack('!H', databin[0:2])[0]
                             pass
                         elif self.tag_datatype[tag] == 'int32':
-                            databin = struct.pack('>i', rtval)
+                            databin = struct.pack('>i', int(rtval))
                             values[self.tag_addr[tag]] = struct.unpack('!H', databin[2:4])[0]
                             values[self.tag_addr[tag] + 1] = struct.unpack('!H', databin[0:2])[0]
                             pass
@@ -173,7 +176,7 @@ class CallbackDataBlock(ModbusSparseDataBlock):
         :param address: The starting address
         :param values: The new values to be set
         """
-        # print("@@@@@@@@@@@@@", address, value)
+        print("@@@@@@@@@@@@@", address, value)
         # print("self.tag_rw", self.tag_rw)
         # super(CallbackDataBlock, self).setValues(address, value)
         self.queue.append_data(self.devices.get(address, None), value)
