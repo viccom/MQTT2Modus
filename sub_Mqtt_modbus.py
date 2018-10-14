@@ -10,6 +10,7 @@ import json
 import re
 import os
 import logging
+import uuid
 import paho.mqtt.client as mqtt
 
 match_value = re.compile(r'^([^/]+)/value')
@@ -25,8 +26,12 @@ datatype_len = {
     "int16": 1,
     "uint32": 2,
     "int32": 2,
-    "float": 2
+    "float": 2,
+    "uint64": 4,
+    "int64": 4,
+    "double": 4
 }
+
 # The callback for when the client receives a CONNACK response from the server.
 def on_connect(client, userdata, flags, rc):
 	logging.info("Sub MQTT Connected with result code "+str(rc))
@@ -60,7 +65,7 @@ class MQTTClient(threading.Thread):
 
 	def run(self):
 		try:
-			mqttc = mqtt.Client(userdata=(self.client, self.mbcfg), client_id="MQTT_TO_Modbus.SUB")
+			mqttc = mqtt.Client(userdata=(self.client, self.mbcfg), client_id="MQTT_TO_Modbus." + str(uuid.uuid1()))
 			mqttc.username_pw_set(self.mqttcfg[3], self.mqttcfg[4])
 			self.mqttc = mqttc
 

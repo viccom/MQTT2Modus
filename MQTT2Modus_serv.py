@@ -100,7 +100,10 @@ datatype_len = {
     "int16": 1,
     "uint32": 2,
     "int32": 2,
-    "float": 2
+    "float": 2,
+    "uint64": 4,
+    "int64": 4,
+    "double": 4
 }
 
 def term_sig_handler(signum, frame):
@@ -176,7 +179,7 @@ class CallbackDataBlock(ModbusSparseDataBlock):
         :param address: The starting address
         :param values: The new values to be set
         """
-        print("@@@@@@@@@@@@@", address, value)
+        # print("@@@@@@@@@@@@@", address, value)
         # print("self.tag_rw", self.tag_rw)
         # super(CallbackDataBlock, self).setValues(address, value)
         self.queue.append_data(self.devices.get(address, None), value)
