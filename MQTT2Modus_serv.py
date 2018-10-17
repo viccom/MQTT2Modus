@@ -152,8 +152,13 @@ class CallbackDataBlock(ModbusSparseDataBlock):
                         tag = _g + "/" + g.groups()[0]
                     if tag in self.tag_addr.keys():
                         # print(g[0], self.tag_addr[g[0]], rtval)
-                        if datatype_len[self.tag_datatype[tag]] == 1:
-                            values[self.tag_addr[tag]] = int(rtval)
+                        if self.tag_datatype[tag] == 'int8':
+                            databin = struct.pack('>h', int(rtval))
+                            values[self.tag_addr[tag]] = struct.unpack('!H', databin)[0]
+                        if self.tag_datatype[tag] == 'int16':
+                            databin = struct.pack('>h', int(rtval))
+                            values[self.tag_addr[tag]] = struct.unpack('!H', databin)[0]
+                            pass
                         elif self.tag_datatype[tag] == 'uint32':
                             databin = struct.pack('>I', int(rtval))
                             values[self.tag_addr[tag]] = struct.unpack('!H', databin[2:4])[0]
@@ -164,13 +169,34 @@ class CallbackDataBlock(ModbusSparseDataBlock):
                             values[self.tag_addr[tag]] = struct.unpack('!H', databin[2:4])[0]
                             values[self.tag_addr[tag] + 1] = struct.unpack('!H', databin[0:2])[0]
                             pass
+                        elif self.tag_datatype[tag] == 'uint64':
+                            databin = struct.pack('>Q', int(rtval))
+                            values[self.tag_addr[tag]] = struct.unpack('!H', databin[6:8])[0]
+                            values[self.tag_addr[tag] + 1] = struct.unpack('!H', databin[4:6])[0]
+                            values[self.tag_addr[tag] + 2] = struct.unpack('!H', databin[2:4])[0]
+                            values[self.tag_addr[tag] + 3] = struct.unpack('!H', databin[0:2])[0]
+                            pass
+                        elif self.tag_datatype[tag] == 'int64':
+                            databin = struct.pack('>q', int(rtval))
+                            values[self.tag_addr[tag]] = struct.unpack('!H', databin[6:8])[0]
+                            values[self.tag_addr[tag] + 1] = struct.unpack('!H', databin[4:6])[0]
+                            values[self.tag_addr[tag] + 2] = struct.unpack('!H', databin[2:4])[0]
+                            values[self.tag_addr[tag] + 3] = struct.unpack('!H', databin[0:2])[0]
+                            pass
                         elif self.tag_datatype[tag] == 'float':
                             databin = struct.pack('>f', float(rtval))
                             values[self.tag_addr[tag]] = struct.unpack('!H', databin[2:4])[0]
                             values[self.tag_addr[tag] + 1] = struct.unpack('!H', databin[0:2])[0]
                             pass
-
-        # print(values)
+                        elif self.tag_datatype[tag] == 'double':
+                            databin = struct.pack('>d', float(rtval))
+                            values[self.tag_addr[tag]] = struct.unpack('!H', databin[6:8])[0]
+                            values[self.tag_addr[tag] + 1] = struct.unpack('!H', databin[4:6])[0]
+                            values[self.tag_addr[tag] + 2] = struct.unpack('!H', databin[2:4])[0]
+                            values[self.tag_addr[tag] + 3] = struct.unpack('!H', databin[0:2])[0]
+                            pass
+                        else:
+                            values[self.tag_addr[tag]] = int(rtval)
         values[0xbeef] = len(values)  # the number of devices
         super(CallbackDataBlock, self).__init__(values)
 
@@ -335,8 +361,8 @@ def run_callback_server():
     # loop = LoopingCall(f=updating_writer, a=(block, tag_addr, tag_datatype, redis_rtdb, gates_list))
     # loop.start(time, now=False)  # initially delay by time
 
-    sub = SubClient(mqttcfg=mqtt_srv, mbcfg=(block, tag_addr, tag_datatype, gates_list))
-    sub.start()
+    # sub = SubClient(mqttcfg=mqtt_srv, mbcfg=(block, tag_addr, tag_datatype, gates_list))
+    # sub.start()
 
     # p = Process(target=device_writer, args=(queue, tag_datatype))
     # p.start()
